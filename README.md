@@ -1,9 +1,9 @@
 # 🛠️ Mobile Studio Engine (Roblox Evolution Project)
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/luauy/BloxFul/main.yml?branch=main&style=for-the-badge&logo=github&label=Build%20Status)
-![GitHub Repo stars](https://img.shields.io/github/stars/luauy/BloxFul?style=for-the-badge&logo=github&color=yellow)
-![GitHub contributors](https://img.shields.io/github/contributors/luauy/BloxFul?style=for-the-badge&color=blue)
-![Platform](https://img.shields.io/badge/Platform-Android-green?style=for-the-badge&logo=android)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/luauy/BloxFul/main.yml?branch=main&style=plastic&logo=github&label=Build%20Status)
+![GitHub Repo stars](https://img.shields.io/github/stars/luauy/BloxFul?style=plastic&logo=github&color=yellow)
+![GitHub contributors](https://img.shields.io/github/contributors/luauy/BloxFul?style=plastic&color=blue)
+![Platform](https://img.shields.io/badge/Platform-Android-green?style=plastic&logo=android)
 ![Language](https://img.shields.io/badge/Engine-Luau%20%7C%20C%2B%2B%20%7C%20Java-blue?style=for-the-badge)
 ![Environment](https://img.shields.io/badge/Environment-Mobile%20Studio-orange?style=for-the-badge)
 
