@@ -28,12 +28,13 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Initialize & Force Clean Gradle Wrapper
+    # CRITICAL FIX: Installs a temporary global toolchain to natively construct a healthy wrapper binary
+    - name: Dynamically Regenerate Missing Gradle Wrapper
       run: |
-        echo "Building robust workspace environment..."
+        echo "Creating wrapper destination directories..."
         mkdir -p gradle/wrapper
         
-        # Inject pristine official distribution variables directly to prevent download failure
+        echo "Provisioning official wrapper distribution configuration..."
         cat << EOF > gradle/wrapper/gradle-wrapper.properties
         distributionBase=GRADLE_USER_HOME
         distributionPath=wrapper/dists
@@ -42,12 +43,15 @@ jobs:
         zipStoreBase=GRADLE_USER_HOME
         zipStorePath=wrapper/dists
         EOF
+        
+        echo "Installing baseline tool to compile the true gradle-wrapper.jar..."
+        sudo apt-get update && sudo apt-get install -y gradle
+        gradle wrapper --gradle-version 8.2.2 --distribution-type bin
 
     - name: Setup Gradle Build Environment
       uses: gradle/actions/setup-gradle@v3
       with:
         gradle-version: wrapper
-        cache-disabled: false
 
     - name: Grant Shell Execution Rights
       run: chmod +x ./gradlew
@@ -55,7 +59,7 @@ jobs:
     - name: Compile and Assemble Debug APK
       run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
-    - name: Export Generated Studio Binary
+    - name: Export Generated Studio Binary Artifact
       uses: actions/upload-artifact@v4
       with:
         name: bloxful-studio-debug-apk
