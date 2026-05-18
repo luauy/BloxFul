@@ -28,30 +28,16 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    # CRITICAL FIX: Installs a temporary global toolchain to natively construct a healthy wrapper binary
-    - name: Dynamically Regenerate Missing Gradle Wrapper
-      run: |
-        echo "Creating wrapper destination directories..."
-        mkdir -p gradle/wrapper
-        
-        echo "Provisioning official wrapper distribution configuration..."
-        cat << EOF > gradle/wrapper/gradle-wrapper.properties
-        distributionBase=GRADLE_USER_HOME
-        distributionPath=wrapper/dists
-        distributionUrl=https\://services.gradle.org/distributions/gradle-8.2.2-bin.zip
-        validateDistributionUrl=true
-        zipStoreBase=GRADLE_USER_HOME
-        zipStorePath=wrapper/dists
-        EOF
-        
-        echo "Installing baseline tool to compile the true gradle-wrapper.jar..."
-        sudo apt-get update && sudo apt-get install -y gradle
-        gradle wrapper --gradle-version 8.2.2 --distribution-type bin
-
-    - name: Setup Gradle Build Environment
+    # FIX: We install a modern, specific Gradle version globally to generate a valid wrapper, bypassing apt-get
+    - name: Install Modern Gradle Toolchain
       uses: gradle/actions/setup-gradle@v3
       with:
-        gradle-version: wrapper
+        gradle-version: 8.2.2
+
+    - name: Dynamically Regenerate Modern Wrapper Binaries
+      run: |
+        echo "Generating pristine wrapper artifacts using Gradle 8.2.2..."
+        gradle wrapper --gradle-version 8.2.2 --distribution-type bin
 
     - name: Grant Shell Execution Rights
       run: chmod +x ./gradlew
