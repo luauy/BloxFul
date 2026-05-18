@@ -4,8 +4,8 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/luauy/BloxFul?style=plastic&logo=github&color=yellow)
 ![GitHub contributors](https://img.shields.io/github/contributors/luauy/BloxFul?style=plastic&color=blue)
 ![Platform](https://img.shields.io/badge/Platform-Android-green?style=plastic&logo=android)
-![Language](https://img.shields.io/badge/Engine-Luau%20%7C%20C%2B%2B%20%7C%20Java-blue?style=for-the-badge)
-![Environment](https://img.shields.io/badge/Environment-Mobile%20Studio-orange?style=for-the-badge)
+![Language](https://img.shields.io/badge/Engine-Luau%20%7C%20C%2B%2B%20%7C%20Java-blue?style=plastic)
+![Environment](https://img.shields.io/badge/Environment-Mobile%20Studio-orange?style=plastic)
 
 ---
 
