@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Guest initialization custom popup UI
         txtGuestSession.setOnClickListener(v -> {
-            showLegacyAlert("Engine Core", "Bypassing authentication...\nInitializing Guest Studio Workspace.");
+            showLegacyAlert("Creating Account..", "init authentication = true...\nInitializing Workspace.");
         });
     }
 
