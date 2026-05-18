@@ -27,14 +27,14 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    # OPTIMIZATION: Cache Gradle packages to drop subsequent build times down significantly
+    # OPTIMIZATION: High-speed caching layer for dependencies
     - name: Configure Gradle Cache
       uses: actions/cache@v4
       with:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/images/build.gradle*', '**/settings.gradle*') }}
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/build.gradle*', '**/settings.gradle*') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
 
@@ -43,8 +43,10 @@ jobs:
       with:
         gradle-version: '8.14.5'
 
-    # STEP 1: Dynamically locate the exact project folder and generate the wrapper binaries natively
+    # STEP 1: Detect project path and natively generate the wrapper binaries using forced Java 17 variables
     - name: Auto-Detect Project Path & Generate Wrapper
+      env:
+        JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }} # Strict override to enforce JDK 17
       run: |
         TARGET_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
         echo "TARGET_PROJECT_PATH=$TARGET_DIR" >> $GITHUB_ENV
@@ -55,13 +57,15 @@ jobs:
         gradle wrapper --gradle-version 8.14.5 --distribution-type bin
         chmod +x ./gradlew
 
-    # STEP 2: Execute target compile layer inside the auto-detected directory
+    # STEP 2: Run compilation with forced Java 17 environment variables
     - name: Compile and Assemble Debug APK
+      env:
+        JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }} # Strict override to enforce JDK 17
       run: |
         cd "${{ env.TARGET_PROJECT_PATH }}"
         ./gradlew assembleDebug --no-daemon --stacktrace --info
 
-    # STEP 3: Secure the output file and push it straight to your dashboard panel
+    # STEP 3: Export output package to dashboard
     - name: Export Generated Studio Binary Artifact
       uses: actions/upload-artifact@v4
       with:
