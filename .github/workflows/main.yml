@@ -28,23 +28,27 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    # FIX: We install a modern, specific Gradle version globally to generate a valid wrapper, bypassing apt-get
-    - name: Install Modern Gradle Toolchain
+    # STEP 1: Provision the specific Gradle 8.14.5 engine distribution
+    - name: Install Verified Gradle 8.14.5 Toolchain
       uses: gradle/actions/setup-gradle@v3
       with:
-        gradle-version: 8.2.2
+        gradle-version: '8.14.5'
 
+    # STEP 2: Dynamically build pristine wrapper artifacts pinned to 8.14.5
     - name: Dynamically Regenerate Modern Wrapper Binaries
       run: |
-        echo "Generating pristine wrapper artifacts using Gradle 8.2.2..."
-        gradle wrapper --gradle-version 8.2.2 --distribution-type bin
+        echo "Generating pristine wrapper artifacts using Gradle 8.14.5..."
+        mkdir -p gradle/wrapper
+        gradle wrapper --gradle-version 8.14.5 --distribution-type bin
 
     - name: Grant Shell Execution Rights
       run: chmod +x ./gradlew
 
+    # STEP 3: Execute target build layout with strict error reporting
     - name: Compile and Assemble Debug APK
       run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
+    # STEP 4: Export compiled artifact package straight to the repo dashboard
     - name: Export Generated Studio Binary Artifact
       uses: actions/upload-artifact@v4
       with:
