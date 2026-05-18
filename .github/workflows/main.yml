@@ -43,29 +43,36 @@ jobs:
       with:
         gradle-version: '8.14.5'
 
-    # STEP 1: Detect project path and natively generate the wrapper binaries using forced Java 17 variables
-    - name: Auto-Detect Project Path & Generate Wrapper
+    # STEP 1: Deep path discovery that explicitly targets the inner project directory containing the /app folder
+    - name: Auto-Detect True Project Path & Generate Wrapper
       env:
-        JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }} # Strict override to enforce JDK 17
+        JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
       run: |
-        TARGET_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
+        # Look for a build.gradle file that lives inside a sub-folder, avoiding the absolute root entry
+        TARGET_DIR=$(dirname $(find . -mindepth 2 -name "build.gradle" | grep -v "/app/" | head -n 1))
+        
+        # Fallback if structure changes
+        if [ -z "$TARGET_DIR" ] || [ "$TARGET_DIR" = "." ]; then
+          TARGET_DIR="./BloxFul"
+        fi
+        
         echo "TARGET_PROJECT_PATH=$TARGET_DIR" >> $GITHUB_ENV
-        echo "Found valid Android configuration directory at: $TARGET_DIR"
+        echo "Targeting core Android folder layer at: $TARGET_DIR"
         
         cd "$TARGET_DIR"
         mkdir -p gradle/wrapper
         gradle wrapper --gradle-version 8.14.5 --distribution-type bin
         chmod +x ./gradlew
 
-    # STEP 2: Run compilation with forced Java 17 environment variables
+    # STEP 2: Execute build operations within the isolated inner directory path
     - name: Compile and Assemble Debug APK
       env:
-        JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }} # Strict override to enforce JDK 17
+        JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
       run: |
         cd "${{ env.TARGET_PROJECT_PATH }}"
         ./gradlew assembleDebug --no-daemon --stacktrace --info
 
-    # STEP 3: Export output package to dashboard
+    # STEP 3: Grab the completed APK file and drop it onto your dashboard
     - name: Export Generated Studio Binary Artifact
       uses: actions/upload-artifact@v4
       with:
