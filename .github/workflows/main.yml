@@ -18,46 +18,55 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Ensure the local environment matches our modern compiler engine requirements
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '17'
-        cache: 'gradle'
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    # STEP 1: Deploy verified Gradle 8.14.5 tooling globally to the runner container
+    # OPTIMIZATION: Cache Gradle packages to drop subsequent build times down significantly
+    - name: Configure Gradle Cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/images/build.gradle*', '**/settings.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
     - name: Install Verified Gradle 8.14.5 Toolchain
       uses: gradle/actions/setup-gradle@v3
       with:
         gradle-version: '8.14.5'
 
-    # STEP 2: Generate perfect wrapper layers directly inside the true project folder
-    - name: Dynamically Regenerate Modern Wrapper Binaries
-      working-directory: ./BloxFul
+    # STEP 1: Dynamically locate the exact project folder and generate the wrapper binaries natively
+    - name: Auto-Detect Project Path & Generate Wrapper
       run: |
-        echo "Generating wrapper inside the true Android folder layout..."
+        TARGET_DIR=$(dirname $(find . -name "build.gradle" | head -n 1))
+        echo "TARGET_PROJECT_PATH=$TARGET_DIR" >> $GITHUB_ENV
+        echo "Found valid Android configuration directory at: $TARGET_DIR"
+        
+        cd "$TARGET_DIR"
         mkdir -p gradle/wrapper
         gradle wrapper --gradle-version 8.14.5 --distribution-type bin
+        chmod +x ./gradlew
 
-    # STEP 3: Grant shell script execution flags to the active wrapper path
-    - name: Grant Shell Execution Rights
-      working-directory: ./BloxFul
-      run: chmod +x ./gradlew
-
-    # STEP 4: Fire the compiler engine targeting the correct subdirectory path
+    # STEP 2: Execute target compile layer inside the auto-detected directory
     - name: Compile and Assemble Debug APK
-      working-directory: ./BloxFul
-      run: ./gradlew assembleDebug --no-daemon --stacktrace --info
+      run: |
+        cd "${{ env.TARGET_PROJECT_PATH }}"
+        ./gradlew assembleDebug --no-daemon --stacktrace --info
 
-    # STEP 5: Grab the compiled engine package and upload it directly to your dashboard
+    # STEP 3: Secure the output file and push it straight to your dashboard panel
     - name: Export Generated Studio Binary Artifact
       uses: actions/upload-artifact@v4
       with:
         name: bloxful-studio-debug-apk
-        path: BloxFul/app/build/outputs/apk/debug/app-debug.apk
+        path: |
+          **/build/outputs/apk/debug/*.apk
         retention-days: 7
         if-no-files-found: error
