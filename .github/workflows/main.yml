@@ -18,6 +18,7 @@ jobs:
       with:
         fetch-depth: 0
 
+    # Ensure the local environment matches our modern compiler engine requirements
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -28,31 +29,35 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    # STEP 1: Provision the specific Gradle 8.14.5 engine distribution
+    # STEP 1: Deploy verified Gradle 8.14.5 tooling globally to the runner container
     - name: Install Verified Gradle 8.14.5 Toolchain
       uses: gradle/actions/setup-gradle@v3
       with:
         gradle-version: '8.14.5'
 
-    # STEP 2: Dynamically build pristine wrapper artifacts pinned to 8.14.5
+    # STEP 2: Generate perfect wrapper layers directly inside the true project folder
     - name: Dynamically Regenerate Modern Wrapper Binaries
+      working-directory: ./BloxFul
       run: |
-        echo "Generating pristine wrapper artifacts using Gradle 8.14.5..."
+        echo "Generating wrapper inside the true Android folder layout..."
         mkdir -p gradle/wrapper
         gradle wrapper --gradle-version 8.14.5 --distribution-type bin
 
+    # STEP 3: Grant shell script execution flags to the active wrapper path
     - name: Grant Shell Execution Rights
+      working-directory: ./BloxFul
       run: chmod +x ./gradlew
 
-    # STEP 3: Execute target build layout with strict error reporting
+    # STEP 4: Fire the compiler engine targeting the correct subdirectory path
     - name: Compile and Assemble Debug APK
+      working-directory: ./BloxFul
       run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
-    # STEP 4: Export compiled artifact package straight to the repo dashboard
+    # STEP 5: Grab the compiled engine package and upload it directly to your dashboard
     - name: Export Generated Studio Binary Artifact
       uses: actions/upload-artifact@v4
       with:
         name: bloxful-studio-debug-apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: BloxFul/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 7
         if-no-files-found: error
