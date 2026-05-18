@@ -1,6 +1,7 @@
 // app/build.gradle
 plugins {
-    id 'com.android.application'
+    // We explicitly attach the version right here to bypass root resolution errors
+    id 'com.android.application' version '8.2.2'
 }
 
 android {
